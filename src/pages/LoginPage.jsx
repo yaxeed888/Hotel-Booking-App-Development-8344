@@ -14,7 +14,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, mockLogin } = useAuth();
-  const [showDemoLogin, setShowDemoLogin] = useState(false);
+  const [showDemoLogin, setShowDemoLogin] = useState(true); // Default to demo login
   const [demoCredentials, setDemoCredentials] = useState({
     email: '',
     password: ''
@@ -34,14 +34,12 @@ const LoginPage = () => {
     };
 
     const result = login(userId, token, userData, newUser);
-    
     if (result.error) {
       toast.error(result.error);
       return;
     }
 
     toast.success('Welcome to BookingClone!');
-    
     if (newUser) {
       navigate('/onboarding');
     } else {
@@ -55,7 +53,6 @@ const LoginPage = () => {
 
     try {
       const result = await mockLogin(demoCredentials.email, demoCredentials.password);
-      
       if (result.success) {
         toast.success(`Welcome back, ${result.user.name}!`);
         navigate(from, { replace: true });
@@ -70,16 +67,10 @@ const LoginPage = () => {
   };
 
   const quickLoginOptions = [
-    {
-      label: 'Demo User',
-      email: 'demo@example.com',
-      password: 'password123'
-    },
-    {
-      label: 'Admin User',
-      email: 'admin@example.com',
-      password: 'admin123'
-    }
+    { label: 'Admin User', email: 'admin@example.com', password: 'admin123' },
+    { label: 'Manager User', email: 'manager@example.com', password: 'manager123' },
+    { label: 'Staff User', email: 'staff@example.com', password: 'staff123' },
+    { label: 'Demo User', email: 'demo@example.com', password: 'password123' }
   ];
 
   return (
@@ -96,7 +87,6 @@ const LoginPage = () => {
               Your perfect stay is just a few clicks away.
             </p>
           </div>
-          
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -136,7 +126,7 @@ const LoginPage = () => {
                 <div className="space-y-6">
                   {/* Quest Login Component */}
                   <div className="quest-login-container">
-                    <QuestLogin 
+                    <QuestLogin
                       onSubmit={handleQuestLogin}
                       email={true}
                       google={false}
@@ -163,17 +153,11 @@ const LoginPage = () => {
                         Email Address
                       </label>
                       <div className="relative">
-                        <SafeIcon 
-                          icon={FiMail} 
-                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
-                        />
+                        <SafeIcon icon={FiMail} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                           type="email"
                           value={demoCredentials.email}
-                          onChange={(e) => setDemoCredentials(prev => ({ 
-                            ...prev, 
-                            email: e.target.value 
-                          }))}
+                          onChange={(e) => setDemoCredentials(prev => ({ ...prev, email: e.target.value }))}
                           required
                           placeholder="Enter your email"
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-booking-blue focus:border-transparent"
@@ -186,17 +170,11 @@ const LoginPage = () => {
                         Password
                       </label>
                       <div className="relative">
-                        <SafeIcon 
-                          icon={FiLock} 
-                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
-                        />
+                        <SafeIcon icon={FiLock} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={demoCredentials.password}
-                          onChange={(e) => setDemoCredentials(prev => ({ 
-                            ...prev, 
-                            password: e.target.value 
-                          }))}
+                          onChange={(e) => setDemoCredentials(prev => ({ ...prev, password: e.target.value }))}
                           required
                           placeholder="Enter your password"
                           className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-booking-blue focus:border-transparent"
@@ -229,10 +207,7 @@ const LoginPage = () => {
                       {quickLoginOptions.map((option, index) => (
                         <button
                           key={index}
-                          onClick={() => setDemoCredentials({
-                            email: option.email,
-                            password: option.password
-                          })}
+                          onClick={() => setDemoCredentials({ email: option.email, password: option.password })}
                           className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors"
                         >
                           {option.label}
@@ -256,8 +231,8 @@ const LoginPage = () => {
               {/* Demo Notice */}
               <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
-                  <strong>Demo Mode:</strong> This is a demonstration app. 
-                  {showDemoLogin ? ' Use demo@example.com / password123 or admin@example.com / admin123' : ' Authentication is simulated.'}
+                  <strong>Demo Mode:</strong> This is a demonstration app.
+                  {showDemoLogin ? ' Use admin@example.com / admin123 for full access' : ' Authentication is simulated.'}
                 </p>
               </div>
             </div>

@@ -90,13 +90,13 @@ export const RoleProvider = ({ children }) => {
   // Check if user has specific permission
   const hasPermission = (permission) => {
     if (!roleData) return false;
-    
+
     // Super admin has all permissions
     if (roleData.permissions.includes('*')) return true;
-    
+
     // Check exact permission match
     if (roleData.permissions.includes(permission)) return true;
-    
+
     // Check wildcard permissions (e.g., 'users.*' matches 'users.read')
     return roleData.permissions.some(perm => {
       if (perm.endsWith('.*')) {
@@ -127,12 +127,12 @@ export const RoleProvider = ({ children }) => {
   const canAccessResource = (resource, permission, resourceUserId = null) => {
     // Check if user has general permission
     if (hasPermission(permission)) return true;
-    
+
     // Check if user has permission for own resources
     if (resourceUserId && user?.id === resourceUserId) {
       return hasPermission(permission + '.own');
     }
-    
+
     return false;
   };
 
@@ -177,23 +177,43 @@ export const RoleProvider = ({ children }) => {
     const roleBasedItems = [];
 
     if (hasPermission('bookings.read.own') || hasPermission('bookings.read')) {
-      roleBasedItems.push({ name: 'My Bookings', path: '/dashboard', permission: 'bookings.read.own' });
+      roleBasedItems.push({
+        name: 'My Bookings',
+        path: '/dashboard',
+        permission: 'bookings.read.own'
+      });
     }
 
     if (hasPermission('analytics.read')) {
-      roleBasedItems.push({ name: 'Analytics', path: '/admin/analytics', permission: 'analytics.read' });
+      roleBasedItems.push({
+        name: 'Analytics',
+        path: '/admin/analytics',
+        permission: 'analytics.read'
+      });
     }
 
     if (hasPermission('users.read')) {
-      roleBasedItems.push({ name: 'User Management', path: '/admin/users', permission: 'users.read' });
+      roleBasedItems.push({
+        name: 'User Management',
+        path: '/admin/users',
+        permission: 'users.read'
+      });
     }
 
     if (hasPermission('properties.read') && hasMinimumRole('staff')) {
-      roleBasedItems.push({ name: 'Property Management', path: '/admin/properties', permission: 'properties.read' });
+      roleBasedItems.push({
+        name: 'Property Management',
+        path: '/admin/properties',
+        permission: 'properties.read'
+      });
     }
 
     if (hasMinimumRole('admin')) {
-      roleBasedItems.push({ name: 'Admin Panel', path: '/admin', permission: 'users.read' });
+      roleBasedItems.push({
+        name: 'Admin Panel',
+        path: '/admin',
+        permission: 'users.read'
+      });
     }
 
     return [...baseItems, ...roleBasedItems];

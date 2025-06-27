@@ -42,10 +42,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('userId', userId);
       localStorage.setItem('token', token);
       localStorage.setItem('userData', JSON.stringify(userData));
-      
       setIsAuthenticated(true);
       setUser(userData);
-      
       return { newUser };
     } catch (error) {
       console.error('Login error:', error);
@@ -66,21 +64,30 @@ export const AuthProvider = ({ children }) => {
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      // Determine role based on email
+      let role = 'user';
+      if (email === 'admin@example.com') {
+        role = 'admin';
+      } else if (email === 'manager@example.com') {
+        role = 'manager';
+      } else if (email === 'staff@example.com') {
+        role = 'staff';
+      }
+
       // Create mock user data
       const mockUser = {
         id: Date.now().toString(),
         email: email,
         name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
-        role: email === 'admin@example.com' ? 'admin' : 'user',
+        role: role,
         created_at: new Date().toISOString()
       };
 
       const mockToken = 'mock_jwt_token_' + Date.now();
-      
+
       // Use the login function
       const result = login(mockUser.id, mockToken, mockUser, false);
-      
       return { success: true, user: mockUser, ...result };
     } catch (error) {
       console.error('Mock login error:', error);
@@ -94,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loading,
-    mockLogin // Add this for testing
+    mockLogin
   };
 
   return (

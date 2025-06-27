@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 // Context Providers
 import { AuthProvider } from './contexts/AuthContext';
+import { RoleProvider } from './contexts/RoleContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { AnalyticsProvider } from './contexts/AnalyticsContext';
 
@@ -52,45 +53,45 @@ function AppContent() {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/property/:id" element={<PropertyDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route 
-            path="/onboarding" 
+          <Route
+            path="/onboarding"
             element={
               <ProtectedRoute>
                 <OnboardingPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/booking/:id" 
+          <Route
+            path="/booking/:id"
             element={
               <ProtectedRoute>
                 <OptimizedBookingPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/confirmation/:bookingId" 
+          <Route
+            path="/confirmation/:bookingId"
             element={
               <ProtectedRoute>
                 <BookingConfirmationPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <UserDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <ProtectedRoute>
                 <AdminDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
         </Routes>
       </main>
@@ -113,11 +114,13 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <NotificationProvider>
-          <AnalyticsProvider>
-            <AppContent />
-          </AnalyticsProvider>
-        </NotificationProvider>
+        <RoleProvider>
+          <NotificationProvider>
+            <AnalyticsProvider>
+              <AppContent />
+            </AnalyticsProvider>
+          </NotificationProvider>
+        </RoleProvider>
       </AuthProvider>
     </Router>
   );

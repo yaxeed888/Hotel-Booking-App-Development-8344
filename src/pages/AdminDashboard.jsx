@@ -3,54 +3,38 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import AnalyticsDashboard from '../components/analytics/AnalyticsDashboard';
+import PropertyManagement from '../components/admin/PropertyManagement';
+import UserManagement from '../components/admin/UserManagement';
+import RoomManagement from '../components/admin/RoomManagement';
+import { usePropertyStore } from '../store/propertyStore';
+import { useAuth } from '../contexts/AuthContext';
+import { useRole } from '../contexts/RoleContext';
+import toast from 'react-hot-toast';
 
-const { 
-  FiHome, 
-  FiUsers, 
-  FiCalendar, 
-  FiDollarSign, 
-  FiTrendingUp, 
-  FiPlus, 
-  FiEdit3, 
-  FiTrash2, 
-  FiEye, 
-  FiSettings,
-  FiBarChart3
-} = FiIcons;
+const { FiHome, FiUsers, FiCalendar, FiDollarSign, FiTrendingUp, FiPlus, FiEdit3, FiTrash2, FiEye, FiSettings, FiBarChart3 } = FiIcons;
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [properties, setProperties] = useState([]);
+  const [selectedPropertyForRooms, setSelectedPropertyForRooms] = useState(null);
+  const { properties, getAllProperties } = usePropertyStore();
+  const { user } = useAuth();
+  const { userRole, hasPermission } = useRole();
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Mock data
-  useEffect(() => {
-    const mockProperties = [
-      {
-        id: 1,
-        name: "Grand Palace Hotel",
-        city: "New York",
-        country: "USA",
-        type: "hotel",
-        status: "active",
-        rooms: 50,
-        avgRating: 4.5,
-        totalBookings: 234
-      },
-      {
-        id: 2,
-        name: "Seaside Resort",
-        city: "Miami",
-        country: "USA",
-        type: "resort",
-        status: "active",
-        rooms: 75,
-        avgRating: 4.7,
-        totalBookings: 189
-      }
-    ];
+  // Check if user has admin access
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || user?.role === 'admin';
 
+  useEffect(() => {
+    if (!isAdmin) {
+      toast.error('Access denied. Admin privileges required.');
+      return;
+    }
+
+    // Load properties when component mounts
+    getAllProperties();
+    
+    // Mock data for bookings and users
     const mockBookings = [
       {
         id: 1,
@@ -91,10 +75,24 @@ const AdminDashboard = () => {
       }
     ];
 
-    setProperties(mockProperties);
     setBookings(mockBookings);
     setUsers(mockUsers);
-  }, []);
+  }, [getAllProperties, isAdmin, userRole, user]);
+
+  // If not admin, show access denied
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-6">You need admin privileges to access this page.</p>
+          <p className="text-sm text-gray-500">
+            Try logging in with: <strong>admin@example.com</strong> / <strong>admin123</strong>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: FiHome },
@@ -136,6 +134,25 @@ const AdminDashboard = () => {
     }
   ];
 
+  // Handle room management navigation
+  const handleManageRooms = (propertyId) => {
+    setSelectedPropertyForRooms(propertyId);
+  };
+
+  // If viewing room management for a specific property
+  if (selectedPropertyForRooms) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <RoomManagement
+            propertyId={selectedPropertyForRooms}
+            onClose={() => setSelectedPropertyForRooms(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -145,6 +162,9 @@ const AdminDashboard = () => {
           <p className="text-gray-600 mt-2">
             Manage your properties, bookings, and users
           </p>
+          <div className="mt-2 text-sm text-green-600">
+            Welcome, {user?.name} ({userRole})
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -255,67 +275,17 @@ const AdminDashboard = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
               >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold text-gray-900">Properties</h2>
-                  <button className="bg-booking-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                    <SafeIcon icon={FiPlus} />
-                    <span>Add Property</span>
-                  </button>
-                </div>
+                <PropertyManagement onManageRooms={handleManageRooms} />
+              </motion.div>
+            )}
 
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Property</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Location</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Type</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Rooms</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Rating</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Status</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {properties.map((property) => (
-                          <tr key={property.id} className="border-b border-gray-100">
-                            <td className="py-4 px-6 font-medium">{property.name}</td>
-                            <td className="py-4 px-6">{property.city}, {property.country}</td>
-                            <td className="py-4 px-6 capitalize">{property.type}</td>
-                            <td className="py-4 px-6">{property.rooms}</td>
-                            <td className="py-4 px-6">
-                              <div className="flex items-center">
-                                <SafeIcon icon={FiTrendingUp} className="text-yellow-400 mr-1" />
-                                {property.avgRating}
-                              </div>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                {property.status}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex space-x-2">
-                                <button className="text-blue-600 hover:text-blue-800">
-                                  <SafeIcon icon={FiEye} />
-                                </button>
-                                <button className="text-green-600 hover:text-green-800">
-                                  <SafeIcon icon={FiEdit3} />
-                                </button>
-                                <button className="text-red-600 hover:text-red-800">
-                                  <SafeIcon icon={FiTrash2} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+            {activeTab === 'users' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <UserManagement />
               </motion.div>
             )}
 
@@ -355,53 +325,6 @@ const AdminDashboard = () => {
                                 {booking.status}
                               </span>
                             </td>
-                            <td className="py-4 px-6">
-                              <div className="flex space-x-2">
-                                <button className="text-blue-600 hover:text-blue-800">
-                                  <SafeIcon icon={FiEye} />
-                                </button>
-                                <button className="text-green-600 hover:text-green-800">
-                                  <SafeIcon icon={FiEdit3} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'users' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-semibold text-gray-900">Users</h2>
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Name</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Email</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Role</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Bookings</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Join Date</th>
-                          <th className="text-left py-3 px-6 font-medium text-gray-600">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.map((user) => (
-                          <tr key={user.id} className="border-b border-gray-100">
-                            <td className="py-4 px-6">{user.name}</td>
-                            <td className="py-4 px-6">{user.email}</td>
-                            <td className="py-4 px-6 capitalize">{user.role}</td>
-                            <td className="py-4 px-6">{user.totalBookings}</td>
-                            <td className="py-4 px-6">{user.joinDate}</td>
                             <td className="py-4 px-6">
                               <div className="flex space-x-2">
                                 <button className="text-blue-600 hover:text-blue-800">

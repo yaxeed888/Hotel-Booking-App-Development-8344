@@ -10,12 +10,12 @@ const RoleGuard = ({
   children, 
   permission = null, 
   role = null, 
-  permissions = null,
-  requireAll = false,
-  fallback = null,
+  permissions = null, 
+  requireAll = false, 
+  fallback = null, 
   showError = true 
 }) => {
-  const { hasPermission, hasAnyPermission, hasAllPermissions, hasMinimumRole, loading } = useRole();
+  const { hasPermission, hasAnyPermission, hasAllPermissions, hasMinimumRole, loading, userRole } = useRole();
 
   if (loading) {
     return (
@@ -31,22 +31,27 @@ const RoleGuard = ({
 
   let hasAccess = true;
 
-  // Check single permission
-  if (permission && !hasPermission(permission)) {
-    hasAccess = false;
-  }
+  // For admin users, grant all access
+  if (userRole === 'admin' || userRole === 'super_admin') {
+    hasAccess = true;
+  } else {
+    // Check single permission
+    if (permission && !hasPermission(permission)) {
+      hasAccess = false;
+    }
 
-  // Check minimum role level
-  if (role && !hasMinimumRole(role)) {
-    hasAccess = false;
-  }
+    // Check minimum role level
+    if (role && !hasMinimumRole(role)) {
+      hasAccess = false;
+    }
 
-  // Check multiple permissions
-  if (permissions && permissions.length > 0) {
-    if (requireAll) {
-      hasAccess = hasAllPermissions(permissions);
-    } else {
-      hasAccess = hasAnyPermission(permissions);
+    // Check multiple permissions
+    if (permissions && permissions.length > 0) {
+      if (requireAll) {
+        hasAccess = hasAllPermissions(permissions);
+      } else {
+        hasAccess = hasAnyPermission(permissions);
+      }
     }
   }
 
@@ -104,7 +109,6 @@ export const usePermissionCheck = () => {
         return hasAnyPermission(permissions);
       }
     }
-
     return true;
   };
 
